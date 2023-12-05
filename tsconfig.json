@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "lib": ["esnext", "dom"],
+        "target": "esnext",
+
+        "jsx": "react",
+        "jsxFactory": "h",
+        "jsxFragmentFactory": "Fragment",
+        // "jsx": "react-jsx",
+        // "jsxImportSource": ".",
+
+        "module": "ESNext",
+        "moduleResolution": "Node",
+
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        // ### Can't get this to work with JSX:
+        // "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+
+
+        "experimentalDecorators": true,
+        "useDefineForClassFields": true,
+    }
+}

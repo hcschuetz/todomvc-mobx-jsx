@@ -118,9 +118,16 @@ export function mapObserving<T>(array: T[], factory: (value: T) => Tree) {
         markers.splice(index, removedCount, ...markedBlocks(added, end));
         break;
       }
-      default:
-        // "update" would be easy to implement, but we don't need it
-        throw new Error("change type not yet implemented: " + change.type);
+      case "update": {
+        // This case is unused in our TodoMVC code and completely untested.
+        const {index, newValue} = change;
+        const end = markers[index + 1];
+        clearRange(markers[index].nextSibling!, end);
+        forNodes(factory(newValue), el => end.before(el));
+        break;
+    }
+    default:
+        throw new Error("unexpected array-change type: " + change["type"]);
     }
   });
 

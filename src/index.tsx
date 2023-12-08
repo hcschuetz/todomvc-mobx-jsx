@@ -12,60 +12,60 @@ import "./view";
 
 
 configure({
-    enforceActions: "never",
-    computedRequiresReaction: false,
-    reactionRequiresObservable: false,
-    observableRequiresReaction: false,
-    disableErrorBoundaries: false,
+  enforceActions: "never",
+  computedRequiresReaction: false,
+  reactionRequiresObservable: false,
+  observableRequiresReaction: false,
+  disableErrorBoundaries: false,
 });
 
 setGlobalConfig({
-    modelAutoTypeChecking: ModelAutoTypeCheckingMode.AlwaysOff //AlwaysOn,
+  modelAutoTypeChecking: ModelAutoTypeCheckingMode.AlwaysOff //AlwaysOn,
 });
 
 
 const store = new TodoStore({
-    todos: fromSnapshot(JSON.parse(localStorage.getItem("todos-mk") ?? "[]")),
+  todos: fromSnapshot(JSON.parse(localStorage.getItem("todos-mk") ?? "[]")),
 });
 
 onSnapshot(store.todos, snap => {
-    localStorage.setItem("todos-mk", JSON.stringify(snap));
+  localStorage.setItem("todos-mk", JSON.stringify(snap));
 });
 
 {
-    const channel = new BroadcastChannel("todos-mk");
+  const channel = new BroadcastChannel("todos-mk");
 
-    let applyingIncomingPatches = false;
+  let applyingIncomingPatches = false;
 
-    onPatches(store.todos, patches => {
-        if (!applyingIncomingPatches) {
-            channel.postMessage(patches);
-        }
-    });
-
-    channel.onmessage = msg => {
-        try {
-            applyingIncomingPatches = true;
-            applyPatches(store.todos, msg.data);
-        } finally {
-            applyingIncomingPatches = false;
-        }
+  onPatches(store.todos, patches => {
+    if (!applyingIncomingPatches) {
+      channel.postMessage(patches);
     }
+  });
+
+  channel.onmessage = msg => {
+    try {
+      applyingIncomingPatches = true;
+      applyPatches(store.todos, msg.data);
+    } finally {
+      applyingIncomingPatches = false;
+    }
+  }
 }
 
 {
-    function updateFilter() {
-        const {hash} = document.location;
-        store.setFilter(
-            hash === "#/active"    ? Filter.SHOW_ACTIVE    :
-            hash === "#/completed" ? Filter.SHOW_COMPLETED :
-                                     Filter.SHOW_ALL,
-        )
-    }
+  function updateFilter() {
+    const {hash} = document.location;
+    store.setFilter(
+      hash === "#/active"  ? Filter.SHOW_ACTIVE  :
+      hash === "#/completed" ? Filter.SHOW_COMPLETED :
+                   Filter.SHOW_ALL,
+    )
+  }
 
-    window.addEventListener("hashchange", updateFilter);
+  window.addEventListener("hashchange", updateFilter);
 
-    updateFilter();
+  updateFilter();
 }
 
 // debug(store);

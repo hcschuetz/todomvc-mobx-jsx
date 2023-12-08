@@ -1,9 +1,14 @@
 import { configure } from "mobx";
 import { ModelAutoTypeCheckingMode, applyPatches, fromSnapshot, onPatches, onSnapshot, setGlobalConfig } from "mobx-keystone";
-import { h } from "./lib/jsx";
+
+import { h } from "../lib/jsx";
+// import debug from "./lib/debug";
+
+import "todomvc-common/base.css";
+import "todomvc-app-css/index.css";
+
 import { Filter, TodoStore } from "./model";
 import "./view";
-// import debug from "./lib/debug";
 
 
 configure({

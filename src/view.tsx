@@ -1,4 +1,5 @@
-import { DisposingHTMLElement, h, TextNode } from '../lib/jsx';
+import { h, TextNode } from '../lib/jsx';
+import { DisposingHTMLElement } from "../lib/disposal";
 import { mapObserving, observing } from "../lib/structure";
 import { Filter, Todo, TodoStore } from './model';
 import { observable } from 'mobx';

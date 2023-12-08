@@ -1,6 +1,47 @@
 import { autorun } from "mobx";
 import { Tree, forNodes } from "./tree";
 
+
+type Disposer = () => unknown; // just like Runnable by coincidence
+
+interface Registry {
+    registerDisposer(disposer: Disposer): unknown;
+}
+
+export class DisposingHTMLElement extends HTMLElement implements Registry {
+    #disposers: (() => void)[] = [];
+
+    registerDisposer(disposer: () => void): void {
+        this.#disposers.push(disposer);
+    }
+
+    disconnectedCallback() {
+        this.innerHTML = '';
+        this.#disposers.forEach(disposer => disposer());
+        this.#disposers.length = 0;
+    }
+}
+
+type Observation<T> = () => T;
+type ObservationRunner<T> = (observation: Observation<T>) => unknown;
+
+function obsHelper<T>(
+    value: [Registry, Observation<T>] | Observation<T>,
+    runner: ObservationRunner<T>,
+) {
+    // TODO more dynamic type checking for a more helpful error message?
+    // Or can I make TypeScript's static checking stricter?
+    if (value instanceof Array) {
+        const [registry, observation] = value;
+        registry.registerDisposer(autorun(() => runner(observation)));
+    } else if (value instanceof Function) {
+        autorun(() => runner(value));
+    } else {
+        console.error("bad 'obs-...' attribute");
+    }
+}
+
+
 type Attrs = Record<string, any>;
 type Component = () => void ;
 
@@ -30,18 +71,17 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Tree[]): T
                         el.classList.toggle(unqualified, value);
                         break;
 
-// TODO register the autoruns somewhere for disposal (but where?)
                     case "obs":
-                        autorun(() => el.setAttribute(name, value()));
+                        obsHelper(value, observation => el.setAttribute(name, observation()));
                         break;
                     case "obs-prop":
-                        autorun(() => (el as any)[unqualified] = value());
+                        obsHelper(value, observation => (el as any)[unqualified] = observation());
                         break;
                     case "obs-style":
-                        autorun(() => (el.style as any)[unqualified] = value());
+                        obsHelper(value, observation => (el.style as any)[unqualified] = observation());
                         break;
                     case "obs-class":
-                        autorun(() => el.classList.toggle(unqualified, value()));
+                        obsHelper(value, observation => el.classList.toggle(unqualified, observation()));
                         break;
 
                     case "on":

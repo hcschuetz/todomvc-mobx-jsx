@@ -29,9 +29,7 @@ export class Todo extends Model({
 
     @computed
     get isVisible(): boolean {
-        const store = this.store;
-        // TODO Is this the standard way to detect if this node has been
-        // removed?
+        const {store} = this;
         return Boolean(store && filters[store.filter](this));
     }
 

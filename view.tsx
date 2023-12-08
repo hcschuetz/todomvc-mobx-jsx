@@ -1,5 +1,5 @@
-import { h, TextNode } from './lib/jsx';
-import { mapObs } from "./lib/structure";
+import { DisposingHTMLElement, h, TextNode } from './lib/jsx';
+import { mapObserving, observing } from "./lib/structure";
 import { Filter, Todo, TodoStore } from './model';
 import { observable } from 'mobx';
 
@@ -30,7 +30,7 @@ class NewTodoForm extends HTMLElement {
 
 customElements.define("new-todo-form", NewTodoForm);
 
-class TodoItem extends HTMLElement {
+class TodoItem extends DisposingHTMLElement {
     todo: Todo;
 
     connectedCallback() {
@@ -52,16 +52,19 @@ class TodoItem extends HTMLElement {
         };
 
         this.append(
-            <li obs-class:hidden={() => !this.todo.isVisible}
-                obs-class:editing={() => state.editing}
+            <li
+                // Instead of omitting an invisible `TodoItem`s in TodoList we
+                // might just hide it using CSS:
+                // obs-class:hidden={[this, () => !this.todo.isVisible]}
+                obs-class:editing={[this, () => state.editing]}
             >
                 <div class="view">
                     <input type="checkbox" class="toggle"
                         on:change={() => this.todo.toggle()}
-                        obs-prop:checked={() => this.todo.completed}
+                        obs-prop:checked={[this, () => this.todo.completed]}
                     />
                     <label on:dblclick={startEdit}>
-                        <TextNode obs-prop:data={() => this.todo.text}/>
+                        <TextNode obs-prop:data={[this, () => this.todo.text]}/>
                     </label>
                     <button class="destroy" on:click={() => this.todo.remove()}/>
                 </div>
@@ -75,15 +78,18 @@ class TodoItem extends HTMLElement {
 
 customElements.define("todo-item", TodoItem);
 
+const renderTodoWheneverVisible = (todo: Todo) => observing(
+    () => todo.isVisible,
+    visible => visible ? <todo-item prop:todo={todo} /> : null,
+);
+
 class TodoList extends HTMLElement {
     todos: Todo[];
 
     connectedCallback() {
         this.append(
             <ul class="todo-list">
-                {mapObs(this.todos, (todo: Todo) =>
-                    <todo-item prop:todo={todo} />
-                )}
+                {mapObserving(this.todos, renderTodoWheneverVisible)}
             </ul>
         );
     }

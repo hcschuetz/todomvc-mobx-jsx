@@ -11,6 +11,8 @@ export function forNodes(tree: Tree, emit: Emit): void {
         for (const child of tree) {
             forNodes(child, emit);
         }
+    } else if (tree == null || tree === "") {
+        // do nothing
     } else if (typeof tree === "string") {
         emit(new Text(tree));
     } else {

@@ -3,25 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TodoMVC based on mobx-keystone and JSX</title>
+  <title>MobX, custom elements, and JSX</title>
   <script type="module" src="index.tsx"></script>
 </head>
 <body class="learn-bar">
   <aside class="learn">
     <header>
-      <h3>TodoMVC based on mobx-keystone and JSX</h3>
+      <h3>MobX, custom elements, and JSX</h3>
       <span class="source-links">
-        <h5>...mobx-keystone...no React...</h5>
-        <a href="https://github.com/hcschuetz/todomvc-mk-jsx">Source</a>
+        <p>
+          Reactive MobX-based state
+          (here with <a href="https://mobx-keystone.js.org/">mobx-keystone</a>),
+          custom DOM elements,
+          and MobX-to-DOM utilities (with JSX support)
+          allow for succinct and readable implementation of web applications.
+        </p>
+        <a href="https://github.com/hcschuetz/todomvc-mobx-jsx">Source</a>
       </span>
     </header>
     <hr>
     <blockquote class="quote speech-bubble">
       <p>
-        ...
+        MobX is a signal based, battle-tested library
+        that makes state management simple and scalable
+        by transparently applying functional reactive programming.
       </p>
       <footer>
-        <a href="https://mobx-keystone.js.org/">mobx-keystone</a>
+        <a href="https://mobx.js.org/">MobX</a>
+      </footer>
+    </blockquote>
+    <blockquote class="quote speech-bubble">
+      <p>
+        One of the key features of web components is
+        the ability to create custom elements:
+        that is, HTML elements whose behavior is defined by the web developer,
+        that extend the set of elements available in the browser.
+      </p>
+      <footer>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements">MDN</a>
+      </footer>
+    </blockquote>
+    <blockquote class="quote speech-bubble">
+      <p>
+        JSX is a syntax extension for JavaScript
+        that lets you write HTML-like markup inside a JavaScript file.
+      </p>
+      <footer>
+        <a href="https://react.dev/learn/writing-markup-with-jsx">Writing Markup with JSX</a>
       </footer>
     </blockquote>
     <!-- <footer>
@@ -37,10 +65,6 @@
   <footer class="info">
     <p>Double-click to edit a todo</p>
     <p>Created by <a href="https://github.com/hcschuetz">Heribert Schütz</a></p>
-    <p>Based on <a href="https://mobx.js.org">mobx</a>,
-      <a href="https://mobx-keystone.js.org">mobx-keystone</a>, and
-      some home-grown utilities.
-    </p>
     <p>(Not yet) part of <a href="http://todomvc.com">TodoMVC</a></p>
   </footer>
 </body>

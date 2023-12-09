@@ -36,19 +36,17 @@ class TodoItem extends DisposingHTMLElement {
 
   connectedCallback() {
     /** UI state */
-    const state = observable({
-      editing: false,
-    });
+    const editing = observable.box<boolean>(false);
 
     let input: HTMLInputElement;
 
     const startEdit = () => {
-      state.editing = true;
+      editing.set(true);
       input.value = this.todo.text;
       input.focus();
     };
     const endEdit = () => {
-      state.editing = false;
+      editing.set(false);
       this.todo.edit(input.value);
     };
 
@@ -57,7 +55,7 @@ class TodoItem extends DisposingHTMLElement {
         // Instead of omitting an invisible `TodoItem`s in TodoList we
         // might just hide it using CSS:
         // obs-class:hidden={[this, () => !this.todo.isVisible]}
-        obs-class:editing={[this, () => state.editing]}
+        obs-class:editing={[this, () => editing.get()]}
       >
         <div class="view">
           <input type="checkbox" class="toggle"

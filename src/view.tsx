@@ -9,16 +9,16 @@ class NewTodoForm extends HTMLElement {
   store: TodoStore;
 
   connectedCallback() {
-    let textEl: HTMLInputElement;
+    let input: HTMLInputElement;
 
     const onSubmit = () => {
-      this.store.addTodo(textEl.value);
-      textEl.value = "";
+      this.store.addTodo(input.value);
+      input.value = "";
     }
 
     this.append(
       <form on:submit={onSubmit}>
-        {textEl =
+        {input =
           <input class="new-todo"
             placeholder="What needs to be done?"
             autofocus

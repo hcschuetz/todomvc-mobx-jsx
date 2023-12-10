@@ -53,7 +53,7 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Tree[]): T
             break;
 
           case "obs":
-            obsHelper(value, observation => el.setAttribute(name, observation()));
+            obsHelper(value, observation => el.setAttribute(unqualified, observation()));
             break;
           case "obs-prop":
             obsHelper(value, observation => (el as any)[unqualified] = observation());

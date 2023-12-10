@@ -1,18 +1,18 @@
-type Disposer = () => unknown; // just like Runnable by coincidence
+type Disposer = () => void;
 
 export interface Registry {
     registerDisposer(disposer: Disposer): unknown;
 }
 
 export class DisposingHTMLElement extends HTMLElement implements Registry {
-    #disposers: (() => void)[] = [];
+    #disposers: Disposer[] = [];
 
-    registerDisposer(disposer: () => void): void {
+    registerDisposer(disposer: Disposer): void {
         this.#disposers.push(disposer);
     }
 
     disconnectedCallback() {
-        this.innerHTML = '';
+        this.replaceChildren();
         this.#disposers.forEach(disposer => disposer());
         this.#disposers.length = 0;
     }

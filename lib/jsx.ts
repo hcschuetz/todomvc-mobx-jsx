@@ -1,5 +1,4 @@
 import { autorun } from "mobx";
-import { Tree, forNodes } from "./tree";
 import { Registry } from "./disposal";
 
 
@@ -26,7 +25,7 @@ function obsHelper<T>(
 type Attrs = Record<string, any>;
 type Component = () => void ;
 
-export function h(tag: string | Component, attrs: Attrs, ...children: Tree[]): Tree {
+export function h(tag: string | Component, attrs: Attrs, ...children: Node[]): Node {
   const el =
     typeof tag === "string"
     ? document.createElement(tag, {is: attrs?.is})
@@ -84,7 +83,9 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Tree[]): T
       }
     }
   }
-  forNodes(children, (child: Node | string) => el.append(child));
+  for (const child of children) {
+    el.append(child);
+  }
   return el;
 }
 

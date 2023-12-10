@@ -1,8 +1,8 @@
 import { h, TextNode } from '../lib/jsx';
 import { DisposingHTMLElement } from "../lib/disposal";
-import { mapObserving, observing } from "../lib/structure";
+import { mapObserving } from "../lib/structure";
 import { Filter, Todo, TodoStore } from './model';
-import { observable } from 'mobx';
+import { observable, reaction } from 'mobx';
 
 
 class NewTodoForm extends HTMLElement {
@@ -50,45 +50,54 @@ class TodoItem extends DisposingHTMLElement {
       this.todo.edit(input.value);
     };
 
-    this.append(
-      <li
-        // Instead of omitting an invisible `TodoItem`s in TodoList we
-        // might just hide it using CSS:
-        // obs-class:hidden={[this, () => !this.todo.isVisible]}
-        obs-class:editing={[this, () => editing.get()]}
-      >
-        <div class="view">
-          <input type="checkbox" class="toggle"
-            on:change={() => this.todo.toggle()}
-            obs-prop:checked={[this, () => this.todo.completed]}
-          />
-          <label on:dblclick={startEdit}>
-            <TextNode obs-prop:data={[this, () => this.todo.text]}/>
-          </label>
-          <button class="destroy" on:click={() => this.todo.remove()}/>
-        </div>
-        <form style:display="contents" on:submit={endEdit}>
-          {input = <input class="edit" on:blur={endEdit}/>}
-        </form>
-      </li>
-    );
+    this.registerDisposer(reaction(
+      () => this.todo.isVisible,
+      visible => {
+        if (visible) {
+          this.replaceChildren(
+            <li
+              obs-class:editing={[this, () => editing.get()]}
+              // Instead of adding/removing contents
+              // we might just show/hide it it using CSS:
+              // obs-class:hidden={[this, () => !this.todo.isVisible]}
+            >
+              <div class="view">
+                <input type="checkbox" class="toggle"
+                  on:change={() => this.todo.toggle()}
+                  obs-prop:checked={[this, () => this.todo.completed]}
+                />
+                <label on:dblclick={startEdit}>
+                  <TextNode obs-prop:data={[this, () => this.todo.text]}/>
+                </label>
+                <button class="destroy" on:click={() => this.todo.remove()}/>
+              </div>
+              <form style:display="contents" on:submit={endEdit}>
+                {input = <input class="edit" on:blur={endEdit}/>}
+              </form>
+            </li>
+          );
+        } else {
+          this.replaceChildren();
+        }
+      },
+      {fireImmediately: true},
+    ));
   }
 }
 
 customElements.define("todo-item", TodoItem);
 
-const renderTodoWheneverVisible = (todo: Todo) => observing(
-  () => todo.isVisible,
-  visible => visible ? <todo-item prop:todo={todo} /> : null,
-);
-
-class TodoList extends HTMLElement {
+class TodoList extends DisposingHTMLElement {
   todos: Todo[];
 
   connectedCallback() {
     this.append(
       <ul class="todo-list">
-        {mapObserving(this.todos, renderTodoWheneverVisible)}
+        {mapObserving(
+          this.todos,
+          (todo: Todo) => <todo-item prop:todo={todo} />,
+          {registry: this},
+        )}
       </ul>
     );
   }

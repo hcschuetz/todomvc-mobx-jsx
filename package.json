@@ -1,7 +1,7 @@
 {
   "name": "todomvc-mobx-jsx",
   "version": "0.0.1",
-  "description": "",
+  "description": "TodoMVC with MobX, Custom Elements and JSX",
   "scripts": {
     "dev": "vite src",
     "build": "vite build --base ./ --outDir ../dist --emptyOutDir src",

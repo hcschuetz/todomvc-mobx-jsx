@@ -64,7 +64,7 @@ export class TodoStore extends Model({
 }) {
   @computed
   get completedCount(): number {
-    return this.todos.filter((todo) => todo.completed).length;
+    return this.todos.reduce((sum, todo) => sum + Number(todo.completed), 0);
   }
 
   @computed

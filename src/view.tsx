@@ -1,4 +1,4 @@
-import { h, TextNode } from '../lib/jsx';
+import { h, TextNode, Fragment } from '../lib/jsx';
 import { DisposingHTMLElement } from "../lib/disposal";
 import { mapObserving } from "../lib/structure";
 import { Filter, Todo, TodoStore } from './model';
@@ -6,13 +6,13 @@ import { observable, reaction } from 'mobx';
 
 
 class NewTodoForm extends HTMLElement {
-  store: TodoStore;
+  create: (text: string) => unknown;
 
   connectedCallback() {
     let input: HTMLInputElement;
 
     const onSubmit = () => {
-      this.store.addTodo(input.value);
+      this.create(input.value);
       input.value = "";
     }
 
@@ -53,8 +53,8 @@ class TodoItem extends DisposingHTMLElement {
     this.registerDisposer(reaction(
       () => this.todo.isVisible,
       visible => {
-        if (visible) {
-          this.replaceChildren(
+        this.replaceChildren(
+          visible ? (
             <li
               obs-class:editing={[this, () => editing.get()]}
               // Instead of adding/removing contents
@@ -75,10 +75,10 @@ class TodoItem extends DisposingHTMLElement {
                 {input = <input class="edit" on:blur={endEdit}/>}
               </form>
             </li>
-          );
-        } else {
-          this.replaceChildren();
-        }
+          ) : (
+            <></>
+          )
+        );
       },
       {fireImmediately: true},
     ));
@@ -121,7 +121,7 @@ class TodoApp extends HTMLElement {
         <header class="header">
           <h1>todos</h1>
           <new-todo-form
-            prop:store={this.store}
+            prop:create={(text: string) => this.store.addTodo(text)}
             on:new-todo={(e: CustomEvent) => this.store.addTodo(e.detail)}
           />
         </header>

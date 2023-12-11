@@ -6,6 +6,7 @@ import {
   Model,
   modelAction,
   findParent,
+  createContext,
 } from "mobx-keystone";
 
 
@@ -15,6 +16,9 @@ export enum Filter {
   SHOW_COMPLETED = "SHOW_COMPLETED",
 }
 
+const filterCtx = createContext<(todo: Todo) => boolean>(() => true);
+const removeTodoCtx = createContext<(todo: Todo) => unknown>();
+
 @model("TodoApp/Todo")
 export class Todo extends Model({
   // No id needed since (for now) a todo is identified by its position in the
@@ -23,19 +27,13 @@ export class Todo extends Model({
   completed: tProp(t.boolean, false),
 }) {
   @computed
-  get store(): TodoStore | undefined {
-    return findParent(this, n => n instanceof TodoStore);
-  }
-
-  @computed
   get isVisible(): boolean {
-    const {store} = this;
-    return Boolean(store && filters[store.filter](this));
+    return filterCtx.get(this)(this);
   }
 
   @modelAction
   remove() {
-    this.store?.removeTodo(this);
+    removeTodoCtx.get(this)?.(this);
   }
 
   @modelAction
@@ -62,6 +60,11 @@ export class TodoStore extends Model({
   todos: tProp(t.array(t.model(Todo)), () => []),
   filter: tProp(t.enum(Filter), Filter.SHOW_ACTIVE),
 }) {
+  protected onInit(): void {
+    filterCtx.setComputed(this, () => filters[this.filter]);
+    removeTodoCtx.set(this, todo => this.removeTodo(todo));
+  }
+
   @computed
   get completedCount(): number {
     return this.todos.reduce((sum, todo) => sum + Number(todo.completed), 0);

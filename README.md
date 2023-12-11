@@ -26,8 +26,13 @@ Building and Running
 git clone https://github.com/hcschuetz/todomvc-mobx-jsx
 cd todomvc-mobx-jsx
 npm install
-npm run build # creates a static app in ./dist/
-npm run dev # to run a local dev server
+
+# Build the app which can be served by a static HTTP server:
+# (Goes to ./dist/)
+npm run build
+
+# Or run a dev server:
+npm run dev
 ```
 
 
@@ -46,7 +51,9 @@ The not-so-interesting files in `src/`:
   Furthermore it implements
   - the observation of the URL hash,
   - access to the `localStorage`, and
-  - communication with other windows through a `BroadcastChannel`
+  - communication with other windows
+    running the same application from the same origin
+    through a `BroadcastChannel`
     (just to demonstrate that the state can also react to non-UI events).
 
 The most interesting code is in `src/view.tsx`.
@@ -74,10 +81,12 @@ Its implementation consists of the following parts:
 - the variable `input` (which will refer to the contained `<input>` element),
 - the user-action callback `onSubmit` (emitting the input text
   to the `create` callback and clearing the input element), and
-- code adding a new DOM tree as the contents of the `NewTodoForm`.
-  (`this.append(...)` is the standard DOM method for inserting children.)
+- code adding a small new DOM tree as the contents of the `NewTodoForm`.
+  (`this.append(...)` is the standard DOM method for inserting children
+  -- just as a reminder for people like me who have almost forgotton about
+  plain DOM manipulation in years of using React.)
 
-The JSX looks a bit like a typical React application, but there are
+The JSX looks a bit like the JSX in a typical React application, but there are
 important differences:
 - Each JSX element evaluates to a real DOM element, not a VDOM (virtual DOM)
   element.
@@ -86,8 +95,9 @@ important differences:
 - Unqualified attributes become DOM attributes, not properties as in React.
   This is the reason why we write `class="..."` rather than `className="..."`.
 - An attribute with qualifier `on:` is converted into an event listener.
-  Actually `on:`-qualified event listeners will automatically
-  `preventDefault()` and `stopImmediatePropagation()`.
+  Actually `on:`-qualified event listeners will automatically "consume"
+  their events by calling
+  `preventDefault()` and `stopImmediatePropagation()` on them.
   (If you don't want this, use `on_:`.)
 
 The structure of our `connectedCallback` implementation is quite typical for
@@ -96,7 +106,7 @@ our programming style.   A typical implementation contains
 - zero or more callback functions,
 - code inserting children.
 
-Of course we could have written
+BTW, we could have written
 ```tsx
 const input =
   <input class="new-todo"
@@ -117,13 +127,14 @@ later.  But as a matter of taste I prefer not to break the DOM nesting apart.
 Instead of deriving `NewTodoForm` from `HTMLElement`
 (as an "autonomous custom element") and wrapping a `<form>` element,
 we could have derived it from `HTMLFormElement`
-(as a "customized built-in elements"), wrapping only the `<input>` element.
+(as a "customized built-in element"), wrapping only the `<input>` element.
 But wrapping the `<form>` has the advantage that we can use our JSX shorthand
 syntax for attaching the submit-event listener.
 
 ### `TodoList`
 
-This component refers to the corresponding array of todos in the state.
+This component holds a reference `todos` to
+the corresponding array of todos in the global state.
 Actually this is a reactive (observable) MobX array.
 
 The `connectedCallback` does not need any DOM references or callbacks.
@@ -154,20 +165,20 @@ call `super.disconnectedCallback()`.)
 
 `TodoList` is again an autonomous custom element wrapping a `<ul>` element
 (rather than a customized build-in element derived from from `HTMLUListElement`),
-which allows to easily attach the class attribute with JSX
+which allows to attach the class attribute with JSX in a comfortable way
 and to inherit the disposal support from `DisposingHTMLElement`.
 
 Finally notice that the todo reference of the `TodoItem` element is assigned
 using the attribute definition `prop:todo={todo}`.
 (The qualifier `prop:` indicates that the value should be assigned to the
-*property* `todo`.)
+*property* `todo`, not to an attribute.)
 
 
 ### `TodoItem`
 
 This component has a reference `todo` of type `Todo`.
-This is actually the property that has just been mentioned in the previous
-section.
+This is actually the property that has just been mentioned
+at the end of the previous section.
 
 The `connectedCallback` has a variable (`input`) referencing a DOM element
 and two callbacks `startEdit` and `endEdit` to be invoked upon user actions.
@@ -186,7 +197,7 @@ but we have some additional complexity:
 - The `TodoItem` element itself is used to manage disposal of the observation.
   It is (like `TodoList`) derived from `DisposingHTMLElement` and its
   `registerDisposer` takes the disposer returned by the reaction.
-- We have more attribute qualifiers in JSX.  (See below.)
+- We have more attribute qualifiers in JSX.  (See the section on JSX below.)
 
 Some utility function analogous to `mapObserving` might help
 to reduce the amount of boilerplate code needed for the visibility treatment.
@@ -224,7 +235,7 @@ We provide these classes for case 2:
   (Unfortunately we cannot use `<Text data="foo" />` directly because
   TypeScript would expect React-ish semantics here.  Can we adjust that?)
 
-For your (autonomous) custom elements you can use the variants
+For our (autonomous) custom elements we can use the variants
 `<todo-item ...>` and `<TodoItem ...>` interchangeably.
 
 As mentioned earlier, we could have derived `NewTodoForm` from `HTMLFormElement`
@@ -238,7 +249,7 @@ JSX attributes of the following forms are supported:
 - `prop:xxx=` sets the property `xxx`.
 - `class:xxx=` with a boolean value is a shorthand for adding/removing
   class `xxx` to/from the class list.
-- `style:xxx=` is a shorthand for accessing the style property `xxx`.
+- `style:xxx=` is a shorthand for setting the style property `xxx`.
 - `obs:xxx=`, `obs-prop:xxx`, `obs-class:xxx`, and `obs-style:xxx` are
   variants of the above observing a value.
   (See below for the expected arguments.)
@@ -286,7 +297,7 @@ for structuring an application.
 Both here and in React components are used to keep local state and
 references into the global state.
 Components also provide callbacks for use interactions.
-And in both cases components can render a UI,
+And in both cases components render a UI,
 even though this works in very different ways.
 
 React render functions run repeatedly (whenever something *might* have

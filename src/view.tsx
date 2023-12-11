@@ -38,6 +38,7 @@ class TodoItem extends DisposingHTMLElement {
     /** UI state */
     const editing = observable.box<boolean>(false);
 
+    let completed: HTMLInputElement;
     let input: HTMLInputElement;
 
     const startEdit = () => {
@@ -62,10 +63,12 @@ class TodoItem extends DisposingHTMLElement {
               // obs-class:hidden={[this, () => !this.todo.isVisible]}
             >
               <div class="view">
-                <input type="checkbox" class="toggle"
-                  on:change={() => this.todo.toggle()}
-                  obs-prop:checked={[this, () => this.todo.completed]}
-                />
+                {completed =
+                  <input type="checkbox" class="toggle"
+                    on:change={() => this.todo.setCompleted(completed.checked)}
+                    obs-prop:checked={[this, () => this.todo.completed]}
+                  />
+                }
                 <label on:dblclick={startEdit}>
                   <TextNode obs-prop:data={[this, () => this.todo.text]}/>
                 </label>

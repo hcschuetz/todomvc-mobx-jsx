@@ -17,7 +17,7 @@ export class Todo extends Model({
   // No id needed since (for now) a todo is identified by its position in the
   // containing list.
   text: tProp(t.string),
-  completed: tProp(t.boolean, false),
+  completed: tProp(t.boolean, false).withSetter(),
 }) {
   @computed
   get isVisible(): boolean {
@@ -41,11 +41,6 @@ export class Todo extends Model({
     }
     this.text = trimmed;
   }
-
-  @modelAction
-  toggle() {
-    this.completed = !this.completed;
-  }
 }
 
 export enum Filter {
@@ -63,7 +58,7 @@ const filters: Record<Filter, (todo: Todo) => boolean> = {
 @model("TodoApp/TodoStore")
 export class TodoStore extends Model({
   todos: tProp(t.array(t.model(Todo)), () => []),
-  filter: tProp(t.enum(Filter), Filter.SHOW_ACTIVE),
+  filter: tProp(t.enum(Filter), Filter.SHOW_ACTIVE).withSetter(),
 }) {
   protected onInit(): void {
     visibilityCtx.setComputed(this, () => filters[this.filter]);
@@ -108,10 +103,5 @@ export class TodoStore extends Model({
         this.removeTodo(todo);
       }
     }
-  }
-
-  @modelAction
-  setFilter(filter: Filter) {
-    this.filter = filter;
   }
 }

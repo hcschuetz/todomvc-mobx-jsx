@@ -180,7 +180,8 @@ This component has a reference `todo` of type `Todo`.
 This is actually the property that has just been mentioned
 at the end of the previous section.
 
-The `connectedCallback` has a variable (`input`) referencing a DOM element
+The `connectedCallback` has two variables (`completed` and `input`)
+referencing DOM elements
 and two callbacks `startEdit` and `endEdit` to be invoked upon user actions.
 Finally there is some code assigning child elements.
 These things are similar to what we had in `NewTodoForm`,

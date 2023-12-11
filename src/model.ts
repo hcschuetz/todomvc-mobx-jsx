@@ -10,12 +10,6 @@ import {
 } from "mobx-keystone";
 
 
-export enum Filter {
-  SHOW_ALL     = "SHOW_ALL",
-  SHOW_ACTIVE  = "SHOW_ACTIVE",
-  SHOW_COMPLETED = "SHOW_COMPLETED",
-}
-
 const filterCtx = createContext<(todo: Todo) => boolean>(() => true);
 const removeTodoCtx = createContext<(todo: Todo) => unknown>();
 
@@ -53,6 +47,18 @@ export class Todo extends Model({
   toggle() {
     this.completed = !this.completed;
   }
+}
+
+export enum Filter {
+  SHOW_ALL     = "SHOW_ALL",
+  SHOW_ACTIVE  = "SHOW_ACTIVE",
+  SHOW_COMPLETED = "SHOW_COMPLETED",
+}
+
+const filters: Record<Filter, (todo: Todo) => boolean> = {
+  SHOW_ALL    : () => true,
+  SHOW_ACTIVE   : (todo) => !todo.completed,
+  SHOW_COMPLETED: (todo) => todo.completed
 }
 
 @model("TodoApp/TodoStore")
@@ -109,10 +115,4 @@ export class TodoStore extends Model({
   setFilter(filter: Filter) {
     this.filter = filter;
   }
-}
-
-const filters: Record<Filter, (todo: Todo) => boolean> = {
-  SHOW_ALL    : () => true,
-  SHOW_ACTIVE   : (todo) => !todo.completed,
-  SHOW_COMPLETED: (todo) => todo.completed
 }

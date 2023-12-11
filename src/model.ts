@@ -5,12 +5,11 @@ import {
   tProp,
   Model,
   modelAction,
-  findParent,
   createContext,
 } from "mobx-keystone";
 
 
-const filterCtx = createContext<(todo: Todo) => boolean>(() => true);
+const visibilityCtx = createContext<(todo: Todo) => boolean>(() => true);
 const removeTodoCtx = createContext<(todo: Todo) => unknown>();
 
 @model("TodoApp/Todo")
@@ -22,7 +21,7 @@ export class Todo extends Model({
 }) {
   @computed
   get isVisible(): boolean {
-    return filterCtx.get(this)(this);
+    return visibilityCtx.get(this)(this);
   }
 
   @modelAction
@@ -67,7 +66,7 @@ export class TodoStore extends Model({
   filter: tProp(t.enum(Filter), Filter.SHOW_ACTIVE),
 }) {
   protected onInit(): void {
-    filterCtx.setComputed(this, () => filters[this.filter]);
+    visibilityCtx.setComputed(this, () => filters[this.filter]);
     removeTodoCtx.set(this, todo => this.removeTodo(todo));
   }
 

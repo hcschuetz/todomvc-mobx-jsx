@@ -108,6 +108,78 @@ class TodoList extends DisposingHTMLElement {
 
 customElements.define("todo-list", TodoList);
 
+/**
+This class is just for demonstration purposes.
+I would not recommend using `<filter-selector>` for several reasons:
+- The abstraction of so little functionality is not really worthwhile.
+- Using the shadow DOM does not fit well with our global CSS.
+  We need to re-define some CSS in the shadow DOM and
+  we even have to override some CSS in the main DOM.
+- We need a nicer solution for the observable property `currentFilter`.
+
+But this class shows how children of the custom element can be referenced
+elegantly in the shadow DOM using `<slot/>`.
+*/
+class FilterSelector extends HTMLElement {
+  href: string;
+  myFilter: Filter;
+
+  // We should be able to simply write something like
+  //
+  //   @observable accessor currentFilter: Filter;
+  //
+  // But according to https://mobx.js.org/enabling-decorators.html
+  // that requires "experimentalDecorators" to be disabled in tsconfig.json.
+  // OTOH mobx-keystone decorators seem to need "experimentalDecorators" enabled.
+  #currentFilter = observable.box<Filter>();
+  set currentFilter(value: Filter) { this.#currentFilter.set(value); }
+  get currentFilter(): Filter | undefined { return this.#currentFilter.get(); }
+
+  connectedCallback() {
+    // When the focus is on the <a> element in the shadow DOM,
+    // this <filter-selector> element has the focus of the main DOM and thus
+    // gets a boxShadow from the CSS.  Override this:
+    this.style.boxShadow = "none";
+
+    this.attachShadow({mode: "closed"}).append(
+      // CSS for the main DOM does not apply in the shadow DOM,
+      // so we have to provide the relevant styles here:
+      <style>{`
+        li {
+          display: inline;
+        }
+        li a {
+          color: inherit;
+          margin: 3px;
+          padding: 3px 7px;
+          text-decoration: none;
+          border: 1px solid transparent;
+          border-radius: 3px;
+        }
+        li a:hover {
+          border-color: #DB7676;
+        }
+        li a.selected {
+          border-color: #CE4646;
+        }
+        li a:focus {
+          box-shadow: 0 0 2px 2px #CF7D7D;
+          outline: 0;
+        }
+      `}</style>,
+      <li>
+        <a href={this.href}
+          obs-class:selected={() => this.currentFilter === this.myFilter}
+        >
+          <slot/>
+        </a>
+      </li>
+    );
+  }
+}
+
+customElements.define("filter-selector", FilterSelector);
+
 class TodoApp extends HTMLElement {
   store: TodoStore;
 
@@ -150,21 +222,21 @@ class TodoApp extends HTMLElement {
             }/>
           </span>
           <ul class="filters">
-            <li>
-              <a href="#/" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_ALL
-              }>All</a>
-            </li>
-            <li>
-              <a href="#/active" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_ACTIVE
-              }>Active</a>
-            </li>
-            <li>
-              <a href="#/completed" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_COMPLETED
-              }>Completed</a>
-            </li>
+            <filter-selector
+              prop:href="#/"
+              prop:myFilter={Filter.SHOW_ALL}
+              obs-prop:currentFilter={() => this.store.filter}
+            >All</filter-selector>
+            <filter-selector
+              prop:href="#/active"
+              prop:myFilter={Filter.SHOW_ACTIVE}
+              obs-prop:currentFilter={() => this.store.filter}
+            >Active</filter-selector>
+            <filter-selector
+              prop:href="#/completed"
+              prop:myFilter={Filter.SHOW_COMPLETED}
+              obs-prop:currentFilter={() => this.store.filter}
+            >Completed</filter-selector>
           </ul>
           <button
             class="clear-completed"

@@ -119,57 +119,59 @@ class TodoApp extends HTMLElement {
     const toggleAllId =
       `toggle-all-${Date.now().toString(36)}-${(Math.random() * (2**53)).toString(36)}`;
 
+    const store = this.store;
+
     this.append(
       <section class="todoapp">
         <header class="header">
           <h1>todos</h1>
           <new-todo-form
-            prop:create={(text: string) => this.store.addTodo(text)}
-            on:new-todo={(e: CustomEvent) => this.store.addTodo(e.detail)}
+            prop:create={(text: string) => store.addTodo(text)}
+            on:new-todo={(e: CustomEvent) => store.addTodo(e.detail)}
           />
         </header>
         <section class="main">
           <input type="checkbox" id={toggleAllId} class="toggle-all"
-            on:change={() => this.store.completeAll()}
+            on:change={() => store.completeAll()}
           />
           <label for={toggleAllId}
-            obs-class:hidden={() => this.store.todos.length === 0}
+            obs-class:hidden={() => store.todos.length === 0}
           >
             {/* Is this text ever visible?  For accessibility? */}
             Mark all as complete
           </label>
-          <todo-list prop:todos={this.store.todos} />
+          <todo-list prop:todos={store.todos} />
         </section>
         <footer class="footer"
-          obs-class:hidden={() => this.store.todos.length === 0}
+          obs-class:hidden={() => store.todos.length === 0}
         >
           <span class="todo-count">
             <TextNode obs-prop:data={() =>
-              `${this.store.activeCount}
-              item${this.store.activeCount === 1 ? "" : "s"} left!`
+              `${store.activeCount}
+              item${store.activeCount === 1 ? "" : "s"} left!`
             }/>
           </span>
           <ul class="filters">
             <li>
               <a href="#/" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_ALL
+                store.filter === Filter.SHOW_ALL
               }>All</a>
             </li>
             <li>
               <a href="#/active" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_ACTIVE
+                store.filter === Filter.SHOW_ACTIVE
               }>Active</a>
             </li>
             <li>
               <a href="#/completed" obs-class:selected={() =>
-                this.store.filter === Filter.SHOW_COMPLETED
+                store.filter === Filter.SHOW_COMPLETED
               }>Completed</a>
             </li>
           </ul>
           <button
             class="clear-completed"
-            obs-class:hidden={() => this.store.completedCount === 0}
-            on:click={() => this.store.clearCompleted()}
+            obs-class:hidden={() => store.completedCount === 0}
+            on:click={() => store.clearCompleted()}
           >Clear completed</button>
         </footer>
       </section>

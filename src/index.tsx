@@ -57,9 +57,9 @@ onSnapshot(store.todos, snap => {
   function updateFilter() {
     const {hash} = document.location;
     store.setFilter(
-      hash === "#/active"  ? Filter.SHOW_ACTIVE  :
+      hash === "#/active"    ? Filter.SHOW_ACTIVE    :
       hash === "#/completed" ? Filter.SHOW_COMPLETED :
-                   Filter.SHOW_ALL,
+                               Filter.SHOW_ALL,
     )
   }
 

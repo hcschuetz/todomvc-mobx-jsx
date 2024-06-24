@@ -5,23 +5,6 @@ import { Registry } from "./disposal";
 type Observe<T> = Parameters<typeof reaction<T, true>>[0];
 type Update <T> = Parameters<typeof reaction<T, true>>[1];
 
-function obsHelper<T>(
-  value: [Registry, Observe<T>] | Observe<T>,
-  update: Update<T>,
-) {
-  // TODO more dynamic type checking for a more helpful error message?
-  // Or can I make TypeScript's static checking stricter?
-  if (value instanceof Array) {
-    const [registry, observe] = value;
-    registry.registerDisposer(reaction(observe, update, {fireImmediately: true}));
-  } else if (value instanceof Function) {
-    reaction(value, update, {fireImmediately: true});
-  } else {
-    console.error("bad 'obs-...' attribute");
-  }
-}
-
-
 type Attrs = Record<string, any>;
 type Component = () => void ;
 
@@ -32,6 +15,19 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Node[]): N
     : new tag();
   if (attrs) {
     for (const [name, value] of Object.entries(attrs)) {
+      function obsHelper<T>(update: Update<T>) {
+        // TODO more dynamic type checking for a more helpful error message?
+        // Or can I make TypeScript's static checking stricter?
+        if (value instanceof Array) {
+          const [registry, observe] = value as [Registry, Observe<T>];
+          registry.registerDisposer(reaction(observe, update, {fireImmediately: true}));
+        } else if (value instanceof Function) {
+          reaction(value as Observe<T>, update, {fireImmediately: true});
+        } else {
+          console.error("bad 'obs-...' attribute");
+        }
+      }
+
       if (!name.includes(":")) {
         if (typeof tag === "string" && name === "is") {
            // do nothing since "is" was already processed
@@ -52,16 +48,16 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Node[]): N
             break;
 
           case "obs":
-            obsHelper(value, newVal => el.setAttribute(unqualified, newVal));
+            obsHelper(newVal => el.setAttribute(unqualified, newVal));
             break;
           case "obs-prop":
-            obsHelper(value, newVal => (el as any)[unqualified] = newVal);
+            obsHelper(newVal => (el as any)[unqualified] = newVal);
             break;
           case "obs-style":
-            obsHelper(value, newVal => (el.style as any)[unqualified] = newVal);
+            obsHelper(newVal => (el.style as any)[unqualified] = newVal);
             break;
           case "obs-class":
-            obsHelper(value, newVal => el.classList.toggle(unqualified, newVal));
+            obsHelper(newVal => el.classList.toggle(unqualified, newVal));
             break;
 
           case "on":

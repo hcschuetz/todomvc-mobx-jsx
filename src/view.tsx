@@ -112,12 +112,7 @@ class TodoApp extends HTMLElement {
   store: TodoStore;
 
   connectedCallback() {
-    // It's ugly to use an `id` attribute in a generated component without
-    // Shadow DOM.  But here we follow the standard structure of TodoMVC
-    // so that we can use their CSS.  At least we use newly generated ids
-    // so that this component could be re-used in theory.
-    const toggleAllId =
-      `toggle-all-${Date.now().toString(36)}-${(Math.random() * (2**53)).toString(36)}`;
+    const toggleAllId = `toggle-all-${crypto.randomUUID()}`;
 
     const store = this.store;
 

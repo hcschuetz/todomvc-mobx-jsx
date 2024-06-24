@@ -2,20 +2,20 @@ import { autorun } from "mobx";
 import { Registry } from "./disposal";
 
 
-type Observation<T> = () => T;
-type ObservationRunner<T> = (observation: Observation<T>) => unknown;
+type Observe<T> = () => T;
+type Update<T> = (newVal: T) => unknown;
 
 function obsHelper<T>(
-  value: [Registry, Observation<T>] | Observation<T>,
-  runner: ObservationRunner<T>,
+  value: [Registry, Observe<T>] | Observe<T>,
+  update: Update<T>,
 ) {
   // TODO more dynamic type checking for a more helpful error message?
   // Or can I make TypeScript's static checking stricter?
   if (value instanceof Array) {
-    const [registry, observation] = value;
-    registry.registerDisposer(autorun(() => runner(observation)));
+    const [registry, observe] = value;
+    registry.registerDisposer(autorun(() => update(observe())));
   } else if (value instanceof Function) {
-    autorun(() => runner(value));
+    autorun(() => update(value()));
   } else {
     console.error("bad 'obs-...' attribute");
   }
@@ -52,16 +52,16 @@ export function h(tag: string | Component, attrs: Attrs, ...children: Node[]): N
             break;
 
           case "obs":
-            obsHelper(value, observation => el.setAttribute(unqualified, observation()));
+            obsHelper(value, newVal => el.setAttribute(unqualified, newVal));
             break;
           case "obs-prop":
-            obsHelper(value, observation => (el as any)[unqualified] = observation());
+            obsHelper(value, newVal => (el as any)[unqualified] = newVal);
             break;
           case "obs-style":
-            obsHelper(value, observation => (el.style as any)[unqualified] = observation());
+            obsHelper(value, newVal => (el.style as any)[unqualified] = newVal);
             break;
           case "obs-class":
-            obsHelper(value, observation => el.classList.toggle(unqualified, observation()));
+            obsHelper(value, newVal => el.classList.toggle(unqualified, newVal));
             break;
 
           case "on":

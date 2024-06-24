@@ -1,9 +1,9 @@
-import { autorun } from "mobx";
+import { reaction } from "mobx";
 import { Registry } from "./disposal";
 
 
-type Observe<T> = () => T;
-type Update<T> = (newVal: T) => unknown;
+type Observe<T> = Parameters<typeof reaction<T, true>>[0];
+type Update <T> = Parameters<typeof reaction<T, true>>[1];
 
 function obsHelper<T>(
   value: [Registry, Observe<T>] | Observe<T>,
@@ -13,9 +13,9 @@ function obsHelper<T>(
   // Or can I make TypeScript's static checking stricter?
   if (value instanceof Array) {
     const [registry, observe] = value;
-    registry.registerDisposer(autorun(() => update(observe())));
+    registry.registerDisposer(reaction(observe, update, {fireImmediately: true}));
   } else if (value instanceof Function) {
-    autorun(() => update(value()));
+    reaction(value, update, {fireImmediately: true});
   } else {
     console.error("bad 'obs-...' attribute");
   }

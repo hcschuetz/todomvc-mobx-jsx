@@ -321,7 +321,8 @@ No library needs to be included and shipped to get this functionality!
 
 ## Open Questions/Help Wanted
 
-For MobX/mobx-keystone experts:
+### For MobX/mobx-keystone experts
+
 - Does all this make sense?
 - Does an approach like this already exist?
   <br>
@@ -340,12 +341,33 @@ For MobX/mobx-keystone experts:
     way.  (In particular heavily overloaded identifiers might cause rollup to
     include unused functionality.)
 
-For TypeScript experts:
-- How can I make the typing around JSX stricter?
+> #### Update
+>
+> Adam Haile's [S](https://github.com/adamhaile/S) and
+> [surplus](https://github.com/adamhaile/surplus) and
+> Ryan Carniato's [SolidJS](https://www.solidjs.com/)
+> also
+> - create real DOM rather than virtual DOM from JSX and
+> - support reactivity.
+>
+> Their reactivity implementations are probably more light-weight than MobX.
+>
+> But I'm not (yet) comfortable with the implicit tracking scopes in their
+> JSX implementations with inline JS (`{...}`) being compiled to thunks.
+> (I do not like a dependency on a pre-compiler that might go out of maintenance.
+> This would be more serious than a library going out of maintenance.)
+>
+> Is it possible to replace MobX with something similar to S
+> while keeping a "standard" JSX parser?
+
+### For TypeScript experts
+
+- Can I make the typing around JSX stricter?
   I have found the documentation around `JSX.IntrinsicElements`
   but could not yet get it working.
 
-General Questions:
+### General Questions
+
 - What would be another appropriate use-case example?
   - The
     "[RealWorld example](https://github.com/gothinkster/realworld#readme)"
